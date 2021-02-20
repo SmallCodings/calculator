@@ -1,9 +1,10 @@
 //TODO
 //add comma and make sure user cant add more than one per storage
+//fix a bug where adding an operator followed immediately by an = causes a crash
 
 const buttonContainer = document.querySelector("#button-container");
 const windowBox = document.querySelector("#text-box");
-let previousStorage = "";
+let previousStorage = [];
 let currentStorage = "";
 
 // Creates buttons on calculator
@@ -26,28 +27,32 @@ function activateButtons() {
                 addNumbers(button);
             }
             else if (button.textContent == "=") {
-                alert("EQUAL");
+                if (previousStorage.length > 1) {
+                    calculate(button.textContent);
+                }
             }
             else if (isOperator(button.textContent)) {
-                alert("OPERATOR");
+                storeNumber(button.textContent);
             }
             else if (isRemover(button.textContent)) {
                 if (currentStorage.length != 0) {
-                    currentStorage = currentStorage.slice(0, -1);
-                    updateNumbers();
-                    alert("REMOVER");
+                    removeNumber(button.textContent);
+                }
+                else if (button.textContent == "C" && previousStorage.length > 0) {
+                    removeNumber(button.textContent);
                 }
             }
         });
     });
 }
 
-// Adds a number to the calc window
+// Adds a number to the calc storage
 function addNumbers(button) {
     currentStorage += button.textContent;
     updateNumbers();
 }
 
+// Updates the calc window with storage number
 function updateNumbers() {
     windowBox.textContent = currentStorage;
 }
@@ -66,6 +71,43 @@ function isRemover(button) {
         return true;
     }
     return false;
+}
+
+// Removes numbers from the storage and updates window
+function removeNumber(button) {
+    if (button == "C") {
+        currentStorage = "";
+        previousStorage.length = 0;
+    }
+    else {
+        currentStorage = currentStorage.slice(0, -1);
+    }
+    updateNumbers();
+}
+
+// Stores the current storage into the array previousStorage
+function storeNumber(button) {
+    previousStorage.push(currentStorage);
+    if (button == "x") {
+        previousStorage.push("*");
+    }
+    else if (button != "=") {
+        previousStorage.push(button);
+    }
+    currentStorage = "";
+    updateNumbers();
+}
+
+// Calculate equation
+function calculate(button) {
+    storeNumber(button);
+    let equation = "";
+    for (let i = 0; i < previousStorage.length; i++) {
+        equation += previousStorage[i];
+    }
+    previousStorage.length = 0;
+    currentStorage = eval(equation);
+    updateNumbers();
 }
 
 // Sets up calculator
